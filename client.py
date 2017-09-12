@@ -4,6 +4,7 @@ import socket
 static_if_connected = False
 def printMenu():
     ''' menu for work for the client side'''
+    print ""
     print "1. Connect to server"      
     print "2. Search sentence "
     print "3. Add sentence "
@@ -36,7 +37,20 @@ def Disconnect(sock):
     return sock
 
 def SearchSentence(sock):
+    '''search for a sentence in the DB_file'''
+    print "Write the sentence you want to search"
+    sentence = raw_input(">> ")
+    sock.send("search " + sentence)
+    #wait for server to respond
+    server_msg = sock.recv(1024)
 
+    while not server_msg:
+        server_msg = sock.recv(1024)
+    if server_msg.decode('ascii') == "ok":
+        print "The sentence is in the DB_file"
+    else: 
+        if server_msg.decode('ascii') == "ERROR":
+            print "The sentence is in the DB_file"
     return sock
 
 def AddSentence(sock):
@@ -44,10 +58,33 @@ def AddSentence(sock):
     print "Write the sentence you want to add"
     sentence = raw_input(">> ")
     sock.send("add " + sentence)
+    #wait for server to respond
+    server_msg = sock.recv(1024)
+
+    while not server_msg:
+        server_msg = sock.recv(1024)
+    if server_msg.decode('ascii') == "ok":
+        print "The server added the sentence :)"
+    else: 
+        if server_msg.decode('ascii') == "ERROR":
+            print "server was unable to add the sentence"
     return sock
 
 def DeleteSentence(sock):
+    '''deleting a sentence from the DB_file'''
+    print "Write the sentence you want to delete"
+    sentence = raw_input(">> ")
+    sock.send("remove " + sentence)
+    #wait for server to respond
+    server_msg = sock.recv(1024)
 
+    while not server_msg:
+        server_msg = sock.recv(1024)
+    if server_msg.decode('ascii') == "ok":
+        print "The server deleted the sentence :)"
+    else: 
+        if server_msg.decode('ascii') == "ERROR":
+            print "line not found"
     return sock
 
 
