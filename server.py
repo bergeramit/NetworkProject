@@ -3,9 +3,11 @@ import time
 
 def mainServer():
     '''server stuff'''
+    mainfile = open('DB_file','a')
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     host = socket.gethostname() 
     port = 9000
+    #binded two strings together - form the address
     serversocket.bind((host, port))
     #need to listen to up to 5 requests
     serversocket.listen(5)  
@@ -18,7 +20,7 @@ def mainServer():
         if not data: 
             pass
         else:
-            clientsocket.send(data.encode('ascii'))
+            #clientsocket.send(data.encode('ascii'))
             clientsocket.close()
 
 if __name__ == "__main__":
