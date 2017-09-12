@@ -17,7 +17,8 @@ def ConnectToServer(sock,host,port):
     '''connection to server on the port'''
     global static_if_connected
     if not static_if_connected:
-        sock.connect((host, port)) 
+        sock.connect((host, port))
+        data = sock.recv(1024) 
         static_if_connected = True
     return sock
 
@@ -25,7 +26,13 @@ def Disconnect(sock):
     '''disconnect from server'''
     global static_if_connected
     if static_if_connected:
-        sock.close()
+        sock.send('disconnect')
+        closer = sock.recv(1024)
+        while not closer:
+            closer = sock.recv(1024)
+        if closer.decode('ascii') == "close":
+            print "The server closed the connection :)"
+            sock.close()
     return sock
 
 def SearchSentence(sock):
@@ -33,7 +40,10 @@ def SearchSentence(sock):
     return sock
 
 def AddSentence(sock):
-
+    '''adding new sentence to the DB_file'''
+    print "Write the sentence you want to add"
+    sentence = raw_input(">> ")
+    sock.send("add " + sentence)
     return sock
 
 def DeleteSentence(sock):
@@ -64,17 +74,6 @@ def mainClient():
         if menuitem == '6':
             break
 
-
-
-
-    # connection to hostname on the port.
-    #s.connect((host, port))    
-    #dataToSend = "hello server from client"
-    #s.send(dataToSend)                           
-    # Receive no more than 1024 bytes
-    #tm = s.recv(1024)  
-    #print("data got from server: %s" % tm.decode('ascii'))                                   
-    #s.close()
 
 if __name__ == "__main__":
     mainClient()
