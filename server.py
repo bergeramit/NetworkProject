@@ -1,6 +1,6 @@
 import socket                                         
 import time
-
+import thread
 
 
 
@@ -65,6 +65,28 @@ def RemoveSentence(cs,sentence):
         cs = SendError(cs)
     return cs
 
+
+def ServerThreadHandleClient(clientsocket, threadID):
+    #send ok for success client connection
+    clientsocket = SendOK(clientsocket)
+    while True:
+        #start listening to orders from the client
+        data_recieved = clientsocket.recv(1024)
+        if not data_recieved:
+            clientsocket = SendError(clientsocket)
+        else:
+            if data_recieved == "disconnect":
+                clientsocket = CloseConnection(clientsocket)
+                break
+            if data_recieved[0:3] == "add":
+                clientsocket = AddSentence(clientsocket,data_recieved[4:])
+            if data_recieved[0:6] == "remove":
+                clientsocket = RemoveSentence(clientsocket,data_recieved[7:])
+            if data_recieved[0:6] == "search":
+                 clientsocket = SearchSentence(clientsocket,data_recieved[7:])
+
+
+
 def mainServer():
     '''server stuff'''
     #mainfile = open('DB_file.txt','a')
@@ -76,31 +98,20 @@ def mainServer():
     #need to listen to up to 5 requests in queue
     serversocket.listen(5)  
     print("Listening...")
+    #counter for the threads
+    threadcount = 0
     #listen to incomming clients
     while True:
          # establish a connection
         clientsocket, addr = serversocket.accept()      
         print("Got a connection from %s" % str(addr))
-        #send ok for success client connection
-        clientsocket = SendOK(clientsocket)
-        while True:
-            #start listening to orders from the client
-            data_recieved = clientsocket.recv(1024)
-            if not data_recieved:
-                clientsocket = SendError(clientsocket)
-            else:
-                if data_recieved == "disconnect":
-                    clientsocket = CloseConnection(clientsocket)
-                    break
-                if data_recieved[0:3] == "add":
-                    clientsocket = AddSentence(clientsocket,data_recieved[4:])
-                if data_recieved[0:6] == "remove":
-                    clientsocket = RemoveSentence(clientsocket,data_recieved[7:])
-                if data_recieved[0:6] == "search":
-                    clientsocket = SearchSentence(clientsocket,data_recieved[7:])
-
-        #clientsocket.send(data.encode('ascii'))
-        #clientsocket.close()
+        #new thread to handle request
+        try:
+            thread.start_new_thread(ServerThreadHandleClient,(clientsocket,threadcount))
+            print ("clients online: %s"% str(threadcount))
+            threadcount = threadcount + 1
+        except Exception, e:
+            print str(e)
 
 if __name__ == "__main__":
     mainServer()
